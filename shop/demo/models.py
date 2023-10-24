@@ -1,5 +1,7 @@
 from django.contrib.auth.models import AbstractUser
+from django.core.validators import FileExtensionValidator
 from django.db import models
+from django.utils.crypto import get_random_string
 
 
 # Create your models here.
@@ -23,3 +25,31 @@ class User(AbstractUser):
 
     def __str__(self):
         return self.full_name()
+
+
+def get_name_file(instanse, filename):
+    return '/'.json([get_random_string(length=5) + '_' + filename])
+
+
+class Product(models.Model):
+    name = models.CharField(max_length=254, verbose_name='Имя', blank=False)
+    date = models.DateTimeField(verbose_name='Дата добавления', auto_now_add=True)
+    photo_file = models.ImageField(max_length=254, upload_to=get_name_file,
+                                   blank=True, null=True,
+                                   validators=[FileExtensionValidator(allowed_extensions=['png', 'jpg', 'jpeg'])])
+    year = models.IntegerField(verbose_name='Год производства', blank=True)
+    country = models.CharField(max_length=254, verbose_name='Страна производства', blank=True)
+    price = models.DecimalField(verbose_name='Стоимость', max_digits=10, decimal_places=2, blank=False,
+                                default=0.00)
+    count = models.IntegerField(verbose_name='Количество', blank=False, default=1)
+    category = models.ForeignKey('Category', verbose_name='Категория', on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.name
+
+
+class Category(models.Model):
+    name = models.CharField(max_length=254, verbose_name='Наименование', blank=False)
+
+    def __str__(self):
+        return self.name
